@@ -6,7 +6,9 @@ The objective of this project is to develop a visualization that explores stroke
 
 The project was developed in the statistical programming environment R.
 
--   **/data**: Contains the raw data used for this project, sourced from the Lone Star Stroke Research Consortium as part of the *Women’s Imaging of Stroke Hemodynamics Study*. The data was kindly provided by Dr. Adrienne N. Dula, PhD.
+-   **/data**: Contains the raw data used for this project.
+      *Data Source*: Women’s Imaging of Stroke Hemodynamics Study (WISHeS). Led by Principal Investigator Dr. Adrienne N. Dula, The University of Texas at Austin. Supported by the Lone Star Stroke Research Consortium, 
+       2022-2024.
 
 -   **/codebook**: Includes the codebook, which describes the structure of the raw data and explains the variables used in the R code.
 
