@@ -1,8 +1,8 @@
-# McQueen_Final_Project
+# PSY6422 Final Project
 
-**PSY_6422 Visualization Project Page:** [McQueen PSY6422 Final Project Page](https://rylie-mcqueen.github.io/McQueen_Final_Project/)
+**PSY_6422 Visualization Project Page:** [PSY6422 Final Project Page](https://rylie-mcqueen.github.io/McQueen_Final_Project/)
 
-The goal of this project is to create a visualization that examines stroke incidence across various age groups between males and females, using a dataset from the *Women’s Imaging of Stroke Hemodynamics Study*. This analysis aims to uncover trends and patterns in stroke incidence by age and biological sex.
+The objective of this project is to develop a visualization that explores stroke incidence across different age groups among males and females, utilizing data from the *Women’s Imaging of Stroke Hemodynamics Study*. This analysis seeks to identify trends and patterns in stroke incidence by age and biological sex, as documented in existing literature.
 
 The project was developed in the statistical programming environment R.
 
