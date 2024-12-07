@@ -8,13 +8,13 @@
 # Install Necessary Packages
 # ---------------------------
 
-# Install packages required for data manipulation, visualization, and table formatting.
-# Function to install and load multiple packages
+# Function to install packages required for data manipulation, visualization, and table formatting
+# Note: If you prefer to manually install and load the required libraries, the packages used in this project are: `tidyverse`, `patchwork`, `ggplot2`, `bslib`, `kableExtra`, and `dplyr`.
 install_and_load <- function(packages) {
   for (package in packages) {
     if (!require(package, character.only = TRUE)) {
-      install.packages(package)
-      library(package, character.only = TRUE)
+      install.packages(package, dependencies = TRUE) # Ensure dependencies are installed
+      library(package, character.only = TRUE)  # Load the package
     }
   }
 }
@@ -22,11 +22,14 @@ install_and_load <- function(packages) {
 # List of packages
 packages <- c("tidyverse", "patchwork", "ggplot2", "bslib", "kableExtra", "dplyr")
 
+# Call the function to install and load packages
+install_and_load(packages)
+
 # --------------------------
 # Load and Inspect Raw Data
 # --------------------------
 
-# Download wishes_pro_data_current.csv from McQueen_Final_Project repository to your device
+# Download wishes_pro_data_current.csv from 'Final_Project' repository to your device
 # Load the dataset to R
 # Replace 'data/wishes_pro_data_current.csv' with the actual path to your CSV file
 data <- read.csv("data/wishes_pro_data_current.csv") 
@@ -35,9 +38,9 @@ data <- read.csv("data/wishes_pro_data_current.csv")
 head(data)  # Displays the first few rows of the dataset for an overview
 # Note: The dataset is large, containing 239 variables. We will filter and select variables of interest in subsequent steps.
 
-# ---------------------------
+# -----------------
 # Data Preparation
-# ---------------------------
+# -----------------
 
 # Sanity Check: Count the number of males and females in the dataset
 # 'jc_gender': 1 = male, 2 = female
@@ -60,7 +63,7 @@ reduced_Wishes_data <- data %>%
   select(patient_id, jc_gender, gs_age) # Select relevant columns
 
 # Display the first 5 rows for a clearer presentation of the data.
-  head(reduced_Wishes_data, n = 5)
+  head(reduced_Wishes_data, n = 10)
 
 # Create a derived variable for age groups
 reduced_Wishes_data <- reduced_Wishes_data %>%
@@ -197,7 +200,7 @@ combined_plot <- plot_male + plot_labels + plot_female +
   )
 
 # Save the combined plot
-ggsave("combined_plot.png", plot = combined_plot, width = 10, height = 8)  # Save the plot as a PNG file with specified dimensions 
+ggsave("combined_plot.png", plot = combined_plot, width = 13, height = 8)  # Save the plot as a PNG file with specified dimensions 
 
 # Sanity check: Verify the total counts of males and females in the final visualization
 total_counts <- summary_data %>%
