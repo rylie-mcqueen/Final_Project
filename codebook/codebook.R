@@ -11,16 +11,16 @@
 install_and_load <- function(packages) {
   for (package in packages) {
     if (!require(package, character.only = TRUE)) {
-      install.packages(package)
-      library(package, character.only = TRUE)
+      install.packages(package, dependencies = TRUE) # Ensure dependencies are installed
+      library(package, character.only = TRUE)  # Load the package
     }
   }
 }
 
-# List of required libraries
+# List of packages
 packages <- c("tidyverse", "patchwork", "ggplot2", "bslib", "kableExtra", "dplyr")
 
-# Install and load all libraries
+# Call the function to install and load packages
 install_and_load(packages)
 
 # --------------------------
@@ -59,7 +59,7 @@ library(dplyr)
 
 # Key Variables:
 # 1. patient_id: Unique identifier for each patient (numeric).
-# 2. jc_gender: Gender (1 = Male, 2 = Female).
+# 2. jc_gender: Biological sex (1 = Male, 2 = Female).
 # 3. gs_age: Patient's age (numeric).
 # 4. pregnancy_number: Total number of pregnancies (for applicable patients).
 # 5. miscarriage_num: Number of miscarriages (for applicable patients).
@@ -71,7 +71,7 @@ library(dplyr)
 
 # Notes:
 # - Missing Data: Some columns (e.g., pregnancy-related variables) have missing values for inapplicable participants.
-# - Variable Types: Numeric (e.g., gs_age) and categorical (e.g., jc_gender).
+# - Variable Types: Numeric and categorical
 # - Refer to the `wishes_readcapvariables_datadictionary` in the /data folder for additional details.
 
 # --------------------------------
@@ -79,7 +79,7 @@ library(dplyr)
 # --------------------------------
 
 # Dataset Overview
-# - Purpose: Focuses on stroke incidence across genders and age groups.
+# - Purpose: Focuses on stroke incidence across sex and age groups.
 # - Source: Derived from the 'data' dataset.
 
 # Key Variables and Their Types:
@@ -97,13 +97,13 @@ library(dplyr)
 #    - Description: Age categories created using `cut()` (e.g., "0-19", "20-25", ..., "100+").
 
 # participant_table: A sample table displaying key information from the reduced_Wishes_data dataset.
-# The table shows the first 5 rows of the filtered data for a concise overview.
+# The table shows the first 10 rows of the filtered data for a concise overview.
 
 #-----------------------
 # Key Variables Overview
 #-----------------------
 
-# age_gender_counts: A summarized dataset that counts the number of occurrences (e.g., stroke incidences or individuals) for each combination of age group and gender.
+# age_gender_counts: A summarized dataset that counts the number of occurrences (e.g., stroke incidences or individuals) for each combination of age group and sex.
 # This dataset is grouped by `age_group` and `gender`, providing a detailed breakdown of how the data is distributed across these categories.
 
 # gender_counts: A summarized dataset that provides the total count of occurrences (e.g., stroke incidences or individuals) for each gender across all age groups. 
@@ -144,7 +144,7 @@ library(dplyr)
 # - Age Group Labels: Centralized for clarity.
 
 # Step 3: Final Visualization
-# - Combined plot compares stroke incidences across genders and age groups.
+# - Combined plot compares stroke incidences across sex and age groups.
 # - Purpose: Intuitive overview of demographic patterns in stroke incidence.
 
 # ----------------------------
