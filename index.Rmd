@@ -1,0 +1,409 @@
+
+---
+title: "**PSY6422 Final Project**"
+date: "2024-11-28"
+output:
+  html_document:
+    theme: sandstone
+    toc: true
+    toc_float:
+      collapsed: false  
+      smooth_scroll: true
+    css: custom.css
+  pdf_document:
+    latex_engine: xelatex
+---
+
+# **1. Background Information**
+
+Stroke is a leading cause of death and disability worldwide, with outcomes that vary significantly across sex and age groups. Research has highlighted that these differences stem from a complex interplay of biological, hormonal, and behavioral factors (Appelros et al., 2009; Bushnell et al., 2014). Males tend to experience strokes at younger ages with higher incidence rates, whereas females, who typically experience strokes later in life, often face worse long-term recovery outcomes (Bushnell et al., 2018). This pattern is further influenced by the higher prevalence of strokes among older individuals, especially females, due to their longer life expectancy (Gargano & Reeves, 2007).
+
+The **Women’s Imaging of Stroke Hemodynamics Study** *(WISHeS)* is a prospective dataset comprising 220 participants, designed to examine how sex differences in cerebrovascular and hemodynamic factors influence stroke outcomes. By analyzing this dataset, researchers can gain valuable insights into the role of sex-specific biological markers and their impact on stroke recovery. This project aims to develop a visualization that examines stroke incidence across different age groups by biological sex, using the *WISHeS* dataset to assess whether the observed trends align with those reported in existing literature.
+
+# **2. Research Question**
+
+*How does the incidence of stroke vary between males and females across different age groups in the Women’s Imaging of Stroke Hemodynamics Study (WISHeS) dataset, and what trends or patterns emerge from this analysis?*
+
+# **3. Project Organization**
+
+The [Final_Project repository](https://github.com/rylie-mcqueen/Final_Project/tree/main) is organized into key sections to help you navigate its contents. The **`/codebook`** folder provides detailed documentation on the dataset, including variable descriptions and structure, offering essential context for the analysis. The **`/data`** folder contains the raw datasets used in this project, forming the basis of all analyses. The **`/figures`** folder showcases visualizations and plots created during the analysis, highlighting the project's key findings and insights. Lastly, the **`/scripts`** folder includes all the code used for data processing, analysis, and visualization. Together, these sections guide you through the project workflow, from raw data to final outputs.
+
+# **4. Dataset**
+
+### Dataset Origins
+
+The raw data for this visualization project comes from the Lone Star Stroke Research Consortium as part of the **Women’s Imaging of Stroke Hemodynamics Study** *(WISHeS)*, led by Principal Investigator Dr. Adrienne N. Dula at The University of Texas at Austin. Permission to use this dataset for this project was kindly granted by Dr. Dula. The dataset includes a comprehensive range of clinical information—such as demographics, medical history, and behavioral risk factors—alongside detailed imaging data, including vascular territories, Circle of Willis variations, and ischemic volumes.
+
+**Data Source**: Women’s Imaging of Stroke Hemodynamics Study (WISHeS). Led by Principal Investigator Dr. Adrienne N. Dula, The University of Texas at Austin. Supported by the Lone Star Stroke Research Consortium, 2022-2024.
+
+### Potential Limitations of Dataset
+
+The *WISHeS* dataset provides a robust foundation for analyzing cerebrovascular and hemodynamic factors, but it is not without limitations. Its focus on a specific study population may limit the generalizability of findings to broader groups, particularly those with more diverse geographic, ethnic, or socioeconomic backgrounds.
+
+Additionally, the dataset uses the term *"gender"* to denote biological sex, defined by chromosomal differences (XX and XY), as structured in the data. This definition does not encompass gender identity or the broader diversity of human gender experiences. A more accurate term would be *"biological sex,"* which highlights a limitation in the study's terminology. To maintain clarity, I explicitly use the terms *"biological sex,"* *"sex,"* *"female,"* and *"male"* when describing participants in the dataset.
+
+# **5. Data Preparation**
+
+## Install and Load Necessary Packages
+
+The following `install_and_load` function will install and load the required packages for this project. If you prefer to load them manually from your own library, the packages used are: `tidyverse`, `patchwork`, `ggplot2`, `bslib`, `kableExtra`, and `dplyr`.
+
+```{r Install Packages, message=FALSE, warning=FALSE}
+# Function to install and load multiple packages required for data manipulation, visualization, and table formatting
+
+install_and_load <- function(packages) {
+  for (package in packages) {
+    if (!require(package, character.only = TRUE)) {
+      install.packages(package, dependencies = TRUE) # Ensure dependencies are installed
+      library(package, character.only = TRUE)  # Load the package
+    }
+  }
+}
+
+# List of packages
+
+packages <- c("tidyverse", "patchwork", "ggplot2", "bslib", "kableExtra", "dplyr")
+
+# Call the function to install and load packages
+
+install_and_load(packages)
+```
+
+## Load Data
+
+First, load the raw data. The dataset is located in the **`/data`** folder of the [Final_Project repository](https://github.com/rylie-mcqueen/Final_Project/tree/main). Ensure the dataset is in `.csv` format rather than `.numbers` before importing it into R. Replace `'data/wishes_pro_data_current.csv'` with the appropriate path to your CSV file.
+
+```{r, echo=TRUE}
+# Replace 'data/wishes_pro_data_current.csv' with the path to your CSV file
+
+data <- read.csv("data/wishes_pro_data_current.csv") 
+```
+
+```{r Sanity Check 1, include=FALSE}
+# Sanity Check: Count the number of males and females in the dataset
+# 'jc_gender': 1 = male, 2 = female
+
+gender_counts <- data %>%
+  count(jc_gender)
+print(gender_counts) # Display gender counts for verification
+```
+
+## Cleaning Data
+
+The *WISHeS* dataset is large, comprising over 237 variables for 220 participants. For this visualization project, I focused specifically on participants' age and sex to simplify the analysis and highlight patterns and trends in stroke incidence related to these factors. In hindsight, I could have included an additional step to rename the dataset columns to **patient_id**, **patient_age**, and **patient_sex**. However, I didn’t think it was necessary since the existing labels are already quite clear. If you prefer, you can rename the column names for consistency or personal preference, but it won't affect the analysis or visualizations that follow. By creating a reduced dataset, I was able to streamline the information, making it more manageable and aligned with the project's objectives. The full details of the data cleaning and preprocessing steps are outlined below.
+
+```{r Clean Data, echo=TRUE}
+# Reduce data set to variables of interest
+
+reduced_Wishes_data <- data %>%
+  select(patient_id, jc_gender, gs_age)
+
+# Select columns and show the first 10 rows
+
+participant_table <- reduced_Wishes_data %>%
+  select(patient_id, gs_age, jc_gender) %>%
+  head(n = 10)
+```
+
+```{r Summary of Clean Data for RMarkdown display , echo=FALSE}
+
+participant_table %>%
+  kbl(
+    caption = "Participant Information (First 10 Rows)",
+    col.names = c("patient_id", "gs_age", "jc_gender"),
+    align = "c" # Center-align all columns
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = TRUE # Makes the table span the entire page
+  )
+
+```
+
+### Description of Cleaned Data
+
+The reduced *WISHeS* dataset focuses on three key variables: `patient_id`, `jc_gender`, and `gs_age`. 
+
+The `patient_id` variable uniquely identifies each participant, ensuring the data remains organized and distinct for analysis. The `jc_gender` variable records participants' biological sex, acilitating the comparison of stroke incidence between males (1) and females (2). Lastly, the `gs_age` variable represents participants' ages, enabling an exploration of age-related patterns in stroke incidence. These variables form the core of the analysis, providing a streamlined and targeted approach to understanding the relationship between age, sex, and stroke incidence.
+
+## Creating Age Groups
+
+This project aims to visualize stroke incidence among males and females across different age groups. Creating defined age groups allows for a more structured and meaningful comparison, making it easier to identify trends and patterns that might not be evident when analyzing individual ages. To establish these groups, I first determined the minimum and maximum participant ages in the dataset, ensuring the age ranges accurately represent the full spectrum of participants. The minimum and maximum ages are summarized in the `Summary of Minimum and Maximum Ages` table below. 
+
+```{r Summary Age Table, echo=FALSE, message=FALSE}
+# Calculate min and max age
+
+summary_table <- reduced_Wishes_data %>%
+  summarize(
+    Min_Value = min(gs_age, na.rm = TRUE),
+    Max_Value = max(gs_age, na.rm = TRUE)
+  )
+```
+
+```{r Create styled table to display min and max age on rmarkdown, echo=FALSE}
+# Create a styled table to display min and max age
+summary_table %>%
+  kbl(
+    caption = "Summary of Minimum and Maximum Ages",
+    col.names = c("Minimum Age", "Maximum Age"),
+    align = "c" # Center-align columns
+  ) %>%
+  kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+    full_width = TRUE,
+  )
+```
+
+Given the dataset's minimum age of 21 and maximum age of 97, I included a label for the 0–19 age group but focused the analysis on ages 20 to 100 years old to provide a comprehensive and relevant range for visualization. Participants were organized into 5-year age intervals to ensure consistent and meaningful comparisons. To achieve this, I added an `age_group` variable to the dataset, assigning each participant to a specific age range based on their recorded age. The age groups are labeled from "0-19" to "100+" to accurately represent each interval. This structured categorization ensures clarity and provides a solid foundation for analyzing trends across various age categories.
+
+```{r Create Age Groups, echo=TRUE}
+# Create a derived variable for age groups
+
+reduced_Wishes_data <- reduced_Wishes_data %>%
+  mutate(age_group = cut(gs_age, 
+                         breaks = c(0, 19, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, Inf),  # Define 5-year age group ranges
+                         labels = c("0-19", "20-25", "26-30", "31-35", "36-40", "41-45", "46-50", "51-55", "56-60", "61-65", "66-70", "71-75", "76-80", "81-85", "86-90", "91-95", "96-100", "100+"),  # Group labels
+                         right = TRUE))  
+```
+
+# **6. Initial Visualizations**
+
+## First Visualization
+
+For the initial visualization, I used a ggplot bar graph to compare stroke incidence between males (1) and females (2) across different age groups. The bar graph was designed with side-by-side bars for each sex within each age group, allowing a direct comparison. While the graph provided a basic overview of the data, it had several limitations that made it less effective for highlighting key insights.
+
+The side-by-side layout of the bars did not clearly emphasize the differences in stroke incidence between males and females, as the comparison lacked visual impact. Additionally, the x-axis labels, despite being rotated for readability, felt cluttered and difficult to interpret. These factors led me to reconsider the design and explore a more effective visualization approach to better communicate the differences in stroke incidence.
+
+```{r First Visualization, echo=TRUE}
+# First visualization, using a simple bar graph
+
+ggplot(reduced_Wishes_data, aes(x = age_group, fill = factor(jc_gender))) + 
+  geom_bar(position = "dodge") +  # Create bar plot where bars are placed side by side
+  labs(
+    title = "Comparison of Stroke Incidence in Male vs Female by Age Group",
+    x = "Age Group",     # Label the x-axis as "Age Group"
+    y = "Count",         # Label the y-axis as "Count"
+    fill = "Sex"      # Label the legend as "Sex"
+  ) +
+  scale_fill_manual(values = c("#1C3A04", "#7eb200")) + # Customize the colors
+  theme_minimal() +      # Apply the minimal theme 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate the x-axis labels 45 degrees for better readability
+
+# Save the first visualization
+
+ggsave("first_initial_visualization.png", width = 10, height = 8)
+```
+
+## Second Visualization
+
+To improve upon the initial bar graph, I created a population pyramid using ggplot to better compare stroke incidence between males and females across age groups. The pyramid format allowed for a side-by-side visual comparison, with male stroke cases plotted on the left and female stroke cases on the right, providing a more balanced and engaging view of the data.
+
+While this visualization enhanced the clarity of sex-based differences, I identified an area for improvement: the placement of age groups along the y-axis. Positioning the age groups in the center of the pyramid, rather than on the sides of the y-axis, could make the comparison more intuitive and visually cohesive. This adjustment would further emphasize the alignment between the two sexes and create a cleaner, more accessible design for interpreting trends in stroke incidence across age groups.
+
+```{r create age_gender_count for second visualization, include=FALSE}
+# Count the number of males and females in each age group. This process enables the creation of a side-by-side visual comparison
+
+age_gender_count <- reduced_Wishes_data %>%
+  group_by(age_group, jc_gender) %>%   # Group the data
+  summarise(count = n(), .groups = "drop") # Count the number of cases and remove grouping
+```
+
+```{r Second Initial Visualization, echo=TRUE}
+# Second visualization, creating a population pyramid
+
+ggplot(age_gender_count, aes(x = count, y = age_group, fill = factor(jc_gender))) +
+  geom_bar(data = subset(age_gender_count, jc_gender == 1), 
+           aes(x = -count),  # Males will be plotted on the left (negative side)
+           stat = "identity", 
+           position = "dodge") +  # Side-by-side bars for males and females
+  geom_bar(data = subset(age_gender_count, jc_gender == 2), 
+           stat = "identity", 
+           position = "dodge") +  # Females will be plotted on the right
+  scale_fill_manual(values = c("#1C3A04", "#7eb200"), # Assign custom colors to the genders
+                    labels = c("Male", "Female")) +   # Use labels to create legend.
+  labs(
+    title = "Stroke Incidence by Age Group and Gender", 
+    x = "Number of Stroke Cases",   # Label the x-axis to indicate the number of stroke cases (negative for males, positive for females).
+    y = "Age Group",                # Label the y-axis to show the age groups being analyzed.
+    fill = "Sex"                 # Label the legend as "Sex" for clarity.
+  ) +
+  theme_minimal() +    # Apply minimal theme
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate the x-axis text labels 45 degrees for better readability
+
+# Save the second visualization
+
+ggsave("second_initial_visualization.png", width = 10, height = 8)
+```
+
+# **7. Final Visualization**
+
+For my final visualization, I chose to use the `patchwork` package to combine three separate graphs—one for males, one for females, and one for age groups—into a cohesive and easily readable population pyramid. This design effectively compares the number of stroke incidences between males and females across different age groups, providing a clear and intuitive representation of the data.
+
+## Prepare Data for Patchwork
+
+The following section of code prepares, processes, and visualizes the data to compare stroke incidences between males and females across various age groups. First, the data is preprocessed by categorizing ages into defined groups using the `cut()` function, ensuring non-overlapping ranges, and labeling them (*e.g., "0-19", "20-24"*). Sex is recoded from values (*1 and 2*) to descriptive labels (*"Male" and "Female"*). Missing values in the age group or sex columns are removed using `drop_na()`.
+
+```{r, echo=TRUE}
+# Modify the 'data' dataset for Patchwork by creating new variables and cleaning the data
+
+data <- data %>%       # Use the pipe operator (%>%) to apply multiple transformations in sequence   
+  mutate(              # Create or modify columns in the dataset
+    age_group = cut(   # Categorize the 'gs_age' variable into age groups
+      gs_age,
+      breaks = c(0, 20, seq(25, 100, by = 5)),   # Specify the breakpoints for age variable
+      labels = c("0-19", "20-24", "25-29", "30-34", "35-39", "40-44", 
+                 "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", 
+                 "75-79", "80-84", "85-89", "90-94", "95-99"),   # Define age ranges
+     right = FALSE   # Exclude the upper bound of each interval (e.g., 20 belongs to the next group)
+    ),
+    sex = recode(jc_gender, `1` = "Male", `2` = "Female")  # Recode the sex variable ('jc_gender') into a more descriptive format
+  ) %>%
+  drop_na(age_group, sex) # Remove rows with missing values in 'age_group' or 'sex'
+```
+
+Next, the data is summarized by counting the number of stroke incidences for each combination of *'age_group'* and *'sex'*. This summarized data is then reshaped with separate columns for male and female counts using `pivot_wider()`, and male counts are made negative to enable a mirrored visualization in the final plot.
+
+```{r Summarize Data for Final Visualization}
+
+# Summarize the data by age group and sex, and prepare it for a mirrored bar chart
+
+summary_data <- data %>%      # Start with the 'data' and apply a series of transformations
+  group_by(age_group, sex) %>%    # Group by 'age_group' and 'sex' so that the summary statistics are calculated for each combination of these categories
+  summarise(count = n(), .groups = 'drop') %>%   # Count rows for each age_group and gender, save as count, and ungroup with .groups = "drop"
+  pivot_wider(names_from = sex, values_from = count, values_fill = 0) %>%     # Reshape the data from long to wide format using 'pivot_wider'
+  mutate(Male = -Male)    # Make the counts for males negative by multiplying the 'Male' column by -1
+```
+
+## Create Individual Plots {.tabset}
+
+The final visualization is composed of three separate plots. The following code explains how to create each individual plot: a horizontal bar chart for male stroke incidences in deep green `(#1C3A04)` positioned on the left, a matching chart for female stroke incidences in light green `(#7eb200)` on the right, and a central plot showcasing age group labels. Each plot is styled with a minimal theme to ensure clarity and eliminate unnecessary visual clutter.
+
+### Male Plot
+
+```{r Male Plot}
+# Create a horizontal bar chart for male stroke incidences by age group
+
+plot_male <- ggplot(summary_data, aes(x = Male, y = age_group)) +   # Use the ggplot2 package with 'summary_data' as the dataset. Map x-axis and y-axis
+  geom_col(fill = "#1C3A04") +  # Create a bar chart where bar lengths represent the male stroke counts. Fill the bars with the color '#1C3A04'
+  scale_x_continuous(labels = abs, breaks = seq(min(summary_data$Male, na.rm = TRUE), 0, by = 2)) +    # Customize the x-axis
+  labs(x = "Number of Stroke Incidences", y = NULL) +    # Add axis labels, set the y-axis label to NULL to remove it
+  theme_minimal() +   # Apply the minimal theme for a clean and modern look
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    plot.title = element_text(hjust = 0.5, size = 12, color = "#1C3A04")   # Center the plot title, set its size to 12, and color to '#1C3A04'
+  ) +
+  ggtitle("Male")  # Add a title "Male" to the plot
+```
+
+### Female Plot
+
+```{r Female Plot}
+# Create a horizontal bar chart for female stroke incidences by age group.
+
+plot_female <- ggplot(summary_data, aes(x = Female, y = age_group)) +   # Use the ggplot2 package with 'summary_data' as the dataset. Map x-axis and y-axis
+  geom_col(fill = "#7eb200") +   # Create a bar chart where bar lengths represent the male stroke counts. Fill the bars with the color '#7eb200'
+  scale_x_continuous(breaks = seq(0, max(summary_data$Female, na.rm = TRUE), by = 2)) +    # Customize the x-axis
+  labs(x = "Number of Stroke Incidences", y = NULL) +    # Add axis labels, set the y-axis label to NULL to remove it
+  theme_minimal() +    # Apply the minimal theme for a clean and modern look
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.major.y = element_blank(),
+    plot.title = element_text(hjust = 0.5, size = 12, color = "#7eb200")   # Center the plot title, set its size to 12, and color to '#7eb2004'
+  ) +
+  ggtitle("Female")  # Add a title "Female" to the plot
+```
+
+### Age Group Plot
+
+```{r Age Group Plot}
+# Create a plot to display the age group labels with a bold title
+
+plot_labels <- ggplot(summary_data, aes(x = 1, y = age_group, label = age_group)) +  # Use `summary_data` with `ggplot2`, setting `x = 1` for a single vertical line and mapping `age_group` to both y-axis position and text labels.
+  geom_text() +         # Add the age group labels as text
+  theme_void() +        # Apply the void theme to remove all background elements
+  theme(                # Customize the title
+    plot.title = element_text(hjust = 0.5, size = 12, face = "bold") 
+  ) +
+  ggtitle("Age Group")  # Add the title 
+```
+
+## Combine and Create Final Plot
+
+Finally, the three plots are combined side by side using the `plot_layout()` function, positioning the male and female plots on either side of the age group labels. A title and caption are added with `plot_annotation()` to provide context and acknowledge the data source. The resulting visualization offers a clear and intuitive comparison of stroke incidences by biological sex across age groups.
+
+```{r Combine Plots to Create Final Visualization}
+# Create final visualization by combing the male, female, and age group plots
+
+combined_plot <- plot_male + plot_labels + plot_female +   # Combine 'plot_male', 'plot_labels', and 'plot_female' side-by-side
+  plot_layout(widths = c(4, 1, 4)) +       # Adjust the widths of the components in the layout
+  plot_annotation(
+    title = "Comparing Stroke Incidence Between Males and Females Across Age Groups",  # Add title
+    caption = "Data Source: Women’s Imaging of Stroke Hemodynamics Study (WISHeS)",  # Add a caption identifying the data source
+    theme = theme(
+      plot.title = element_text(hjust = 0.5, size = 13, face = "bold"),    # Style the title: center it, set font size to 13, and make it bold
+      plot.caption = element_text(hjust = 0, size = 10, face = "italic")   # Style the caption: align it to the left, set font size to 10, and make it italic
+    )
+  )
+
+
+# Print Plot
+
+print(combined_plot)
+```
+```{r Save combine plot}
+# Save the combined plot
+
+ggsave("combined_plot.png", plot = combined_plot, width = 13, height = 8)  # Save the plot as a PNG file with specified dimensions 
+
+```
+
+
+```{r Sanity Check 2, include=FALSE}
+# Sanity check: Verify the total counts of males and females in the final visualization
+total_counts <- summary_data %>%
+  summarise(
+    Total_Male = sum(Male, na.rm = TRUE) * -1,  # Calculate the total male count:
+    # Sum the 'Male' column (negative values) and 
+    # multiply by -1 to convert it to positive.
+    
+    Total_Female = sum(Female, na.rm = TRUE)    # Calculate the total female count:
+    # Sum the 'Female' column, ignoring NA values.
+  )
+
+
+# Print the total counts of males and females to confirm accuracy.
+
+print(total_counts)
+```
+
+# **8. Interpretation**
+### Conclusion
+The final visualization compares stroke incidences between males and females across various age groups, revealing trends that align with existing research. Stroke incidences generally increase with age for both sexes, reflecting the higher risk of strokes in older populations. Among younger age groups (below 55), males tend to experience more strokes than females, although the overall numbers in these groups remain relatively low. In older age groups, the pattern reverses, with females experiencing more strokes than males. This trend persists into the oldest age groups (85 and above), likely due to females' longer life expectancy (Gargano & Reeves, 2007).
+
+The visualization reveals that stroke incidences peak for males in the 55–59 age group before declining, while females reach their highest incidence in the 65–69 age group, followed by a gradual decrease. These findings suggest the need to prioritize stroke prevention efforts for males in their 50s and early 60s and for females in their late 60s and beyond. Overall, the visualization highlights the relationship between age, biological sex, and stroke incidence, aligning with previously documented trends in literature and offering valuable insights to inform public health strategies and interventions.
+
+### Potential Limitations of Final Visualization 
+It is important to consider the limitations of the data when interpreting the final visualization. The analysis is based on the *Women’s Imaging of Stroke Hemodynamics Study*, which includes only 220 patients—a relatively small sample size that may limit the generalizability of the findings to larger or more diverse populations. Moreover, while this visualization focuses on age and sex as key factors influencing stroke incidences, it does not account for other critical variables that significantly impact stroke risk. Factors such as lifestyle, diet, genetic predisposition, socioeconomic status, access to healthcare, and preexisting conditions (e.g., hypertension, diabetes) were not included in this analysis. These omitted variables could introduce bias or confounding effects, emphasizing the need for caution when drawing broad conclusions or applying these findings to other populations. Future research with larger, more representative samples and a more comprehensive evaluation of contributing factors is necessary to gain a deeper understanding of the dynamics of stroke risk.
+
+# **9. Future Studies**
+
+In summary, this visualization effectively highlights the stroke incidences among males and females across various age groups in the *WISHeS* dataset. Given more time, it would have been interesting to explore a way to animate the age groups sequentially to enhance the comparison of stroke incidence by sex. While I noticed that this could be achieved using `ggplot` in the initial visualizations, I was unable to implement it successfully with `patchwork`. Although this animation would not change the content of the visualization, it could add an engaging dynamic element.
+
+Future studies analyzing the *WISHeS* dataset could consider creating a scatter plot to investigate the relationship between stroke severity and age, using `NIHSS` scores as an indicator of stroke severity. Incorporating color coding or shape differentiation based on `jc_gender` could help identify potential differences in stroke severity trends between males and females. Such analyses would provide a deeper understanding of the interplay between age, sex, and stroke severity, offering valuable insights for future research and clinical interventions.
+
+# **10. References**
+
++ Appelros, P., Stegmayr, B., & Terént, A. (2009a). Sex differences in stroke epidemiology. *Stroke*, 40(4), 1082–1090. https://doi.org/10.1161/strokeaha.108.540781 
+
++ Bushnell, C., Howard, V. J., Lisabeth, L., Caso, V., Gall, S., Kleindorfer, D., Chaturvedi, S., Madsen, T. E., Demel, S. L., Lee, S.-J., & Reeves, M. (2018). Sex differences in the evaluation and treatment of acute ischaemic stroke. *The Lancet Neurology*, 17(7), 641–650. https://doi.org/10.1016/s1474-4422(18)30201-1 
+
++ Bushnell, C., McCullough, L. D., Awad, I. A., Chireau, M. V., Fedder, W. N., Furie, K. L., Howard, V. J., Lichtman, J. H., Lisabeth, L. D., Piña, I. L., Reeves, M. J., Rexrode, K. M., Saposnik, G., Singh, V., Towfighi, A., Vaccarino, V., & Walters, M. R. (2014). Guidelines for the prevention of stroke in women. *Stroke*, 45(5), 1545–1588. https://doi.org/10.1161/01.str.0000442009.06663.48 
+
++ Gargano, J. W., & Reeves, M. J. (2007). Sex differences in stroke recovery and stroke-specific quality of life. *Stroke*, 38(9), 2541–2548. https://doi.org/10.1161/strokeaha.107.485482 
+
++ Women’s Imaging of Stroke Hemodynamics Study (WISHeS). (2022–2024). Led by Principal Investigator Dr. Adrienne N. Dula, The University of Texas at Austin. Supported by the Lone Star Stroke Research Consortium. 
+
+[Repo for this analysis](https://github.com/rylie-mcqueen/Final_Project/tree/main) (the markdown file that generated this page, along with the data and figure files).
