@@ -32,7 +32,7 @@ install_and_load(packages)
 # Download wishes_pro_data_current.csv from 'Final_Project' repository to your device
 # Load the dataset to R
 # Replace 'data/wishes_pro_data_current.csv' with the actual path to your CSV file
-data <- read.csv("data/wishes_pro_data_current.csv") 
+data <- read.csv("wishes_pro_data_current.csv") 
 
 # Quick inspection of the dataset
 head(data)  # Displays the first few rows of the dataset for an overview
@@ -63,7 +63,7 @@ reduced_Wishes_data <- data %>%
   select(patient_id, jc_gender, gs_age) # Select relevant columns
 
 # Display the first 5 rows for a clearer presentation of the data.
-  head(reduced_Wishes_data, n = 10)
+head(reduced_Wishes_data, n = 10)
 
 # Create a derived variable for age groups
 reduced_Wishes_data <- reduced_Wishes_data %>%
@@ -113,7 +113,7 @@ ggplot(age_gender_count, aes(x = count, y = age_group, fill = factor(jc_gender))
   scale_fill_manual(values = c("#1C3A04", "#7eb200"), # Assign custom colors for "male" and "female"
                     labels = c("Male", "Female")) +   # Label the legend entries
   labs(
-    title = "Stroke Incidence by Age Group and Gender",
+    title = "Stroke Incidence by Age Group and Sex",
     x = "Number of Stroke Cases",  # Label for x-axis
     y = "Age Group",               # Label for y-axis
     fill = "Sex"                   # Legend label
