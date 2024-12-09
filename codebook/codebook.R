@@ -2,6 +2,10 @@
 # Codebook: Data Analysis and Visualization for Stroke Incidence and Outcomes
 # -----------------------------------------------------------------------------
 
+# The objective of this project is to develop a visualization that explores stroke incidence across different age groups among males and females, utilizing data from the Women’s Imaging of Stroke Hemodynamics Study. This analysis seeks to identify trends and patterns in stroke incidence by age and biological sex, as documented in existing literature.
+# The raw data for this visualization project comes from the Lone Star Stroke Research Consortium as part of the Women’s Imaging of Stroke Hemodynamics Study (WISHeS), led by Principal Investigator Dr. Adrienne N. Dula at The University of Texas at Austin. Permission to use this dataset for this project was kindly granted by Dr. Dula. The dataset includes a comprehensive range of clinical information—such as demographics, medical history, and behavioral risk factors—alongside detailed imaging data, including vascular territories, Circle of Willis variations, and ischemic volumes.
+# Data Source: Women’s Imaging of Stroke Hemodynamics Study (WISHeS). Led by Principal Investigator Dr. Adrienne N. Dula, The University of Texas at Austin. Supported by the Lone Star Stroke Research Consortium, 2022-2024.
+
 # --------------------------------
 # Installing and Loading Libraries
 # --------------------------------
